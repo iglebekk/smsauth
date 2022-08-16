@@ -15,6 +15,9 @@ return new class extends Migration
     {
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('account_id')->constrained();
+            $table->string('receiver');
+            $table->string('code');
             $table->timestamps();
         });
     }
