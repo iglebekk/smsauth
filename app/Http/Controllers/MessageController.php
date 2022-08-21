@@ -2,63 +2,37 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Services\SendMessageServices;
 use App\Models\Message;
+use Carbon\Carbon;
+use Illuminate\Auth\Events\Validated;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class MessageController extends AppController
-{
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
+class MessageController extends Controller {
+    public function send(Request $request): JsonResponse {
+        $validator = Validated(
+            $request->all(),
+            [
+                'receiver' => ['string', 'required'],
+                'timeout' => ['string']
+            ]
+        );
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        if ($validator->fails()) {
+            Log::error('Validator failed');
+            return $this->jsonResponse(false, ['message' => 'Validator failed'], 500);
+        }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Message  $message
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Message $message)
-    {
-        //
-    }
+        $code = Str::random(5);
+        $sender = 'SenderName';
+        $receiver = $validator->safe()->only(['receiver']);
+        $timeout = $validator->safe()->only(['timeout']);
+        $timeout = Carbon::now()->addSeconds($timeout ?? 120);
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Message  $message
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Message $message)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Message  $message
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Message $message)
-    {
-        //
+        if (!(new SendMessageServices)->send($receiver, $sender, $code)) {
+            Log::error('Sending message failed');
+            return $this->jsonResponse(false, ['message' => 'Sending message failed'], 500);
+        }
     }
 }

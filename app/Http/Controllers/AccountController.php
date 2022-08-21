@@ -4,15 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
-class AccountController extends AppController {
+class AccountController extends Controller {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index() {
-        //
+    public function index(): JsonResponse {
+        $accounts = auth()->user()->accounts()->get();
+
+        return $this->jsonResponse(data: $accounts);
     }
 
     /**

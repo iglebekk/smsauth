@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::group(['prefix' => 'v1'], function () {
     Route::apiResource('account', AccountController::class);
     Route::group(['prefix' => 'account/{account}'], function () {
-        Route::apiResource('message', MessageController::class);
+        Route::post('/message', [MessageController::class, 'send']);
+        Route::post('/message/validate', [MessageController::class, 'validate']);
     });
 });
